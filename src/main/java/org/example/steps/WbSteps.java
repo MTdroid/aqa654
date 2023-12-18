@@ -1,7 +1,8 @@
 package org.example.steps;
 
 
-import org.example.elementsLocation.TestCase4Xpath;
+import org.example.elementsLocation.MainPageElements;
+import org.example.elementsLocation.SearchingResultsElements;
 import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -13,68 +14,86 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+
 
 public class WbSteps {
+
     public static WebDriver webDriver;
 
-    public static void beforeEach() throws InterruptedException {
+    public static void beforeEach()  {
+
         System.setProperty("webdriver.chrome.driver", "C:\\Users\\M.TAG\\selenium\\chromedriver-win64\\chromedriver.exe");
         webDriver = new ChromeDriver();
         webDriver.get("https://www.wildberries.ru/");
         Dimension d = new Dimension(1920, 1080);
         webDriver.manage().window().setSize(d);
-        webDriver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
+        webDriver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+
+        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(11));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(MainPageElements.chatButton)));
     }
 
-    public static WebElement searchByXpath(String xpath) throws InterruptedException {
-        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(3));
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath(xpath)));
-        Thread.sleep(200);
+    public static WebElement searchByXpath(String xpath){
+
+        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(5));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
+
         return webDriver.findElement(By.xpath(xpath));
     }
 
-    public static void clickElementXpath(String element) throws InterruptedException {
-        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(4));
-        wait.until(ExpectedConditions.elementToBeClickable(By.xpath(element)));
-        searchByXpath(element).click();
+    public static void clickElementXpath(String element) {
 
+        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(5));
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath(element)));
+        wait.ignoring(StaleElementReferenceException.class);
+        searchByXpath(element).click();
     }
 
-    public static void hoverMouse(String element) throws InterruptedException {
+    public static void addressEquals(String element,String text) {
+
+        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(5));
+        wait.until(ExpectedConditions.textMatches(By.xpath(element), Pattern.compile(text)));
+        searchByXpath(element).click();
+    }
+
+    public static void hoverMouse(String element) {
+
         WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(3));
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath(element)));
-
         Actions actions = new Actions(webDriver);
         actions.moveToElement(searchByXpath(element)).perform();
     }
 
-    public static void textEquals(String element, String text) throws InterruptedException {
-        Thread.sleep(1300);
-        Assertions.assertTrue(element.contains(text));
+    public static void textEquals(String element, String text) {
+
+        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(6));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(element)));
+        Assertions.assertTrue(searchByXpath(element).getText().contains(text));
     }
 
-    public static void isEnabled(String element) throws InterruptedException {
+    public static void isEnabled(String element) {
 
         WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(3));
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath(element)));
         Assertions.assertTrue(searchByXpath(element).isEnabled());
     }
 
-    public static void sendKeys(String element, String text) throws InterruptedException {
+    public static void sendKeys(String element, String text) {
 
+        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(3));
+        wait.withTimeout(Duration.ofSeconds(3));
         searchByXpath(element).sendKeys(text + Keys.ENTER);
-        Thread.sleep(300);
     }
 
-    public static void clean(String element) throws InterruptedException {
-
+    public static void clean(String element){
         searchByXpath(element).clear();
     }
 
-    public static int elementsOnPage() throws InterruptedException {
+    public static int elementsOnPage() {
 
-        Thread.sleep(700);
-        List<WebElement> listItems = webDriver.findElements(By.xpath(TestCase4Xpath.checkSize));
+        List<WebElement> listItems = webDriver.findElements(By.xpath(SearchingResultsElements.checkSize));
+
         return listItems.size();
     }
 }
